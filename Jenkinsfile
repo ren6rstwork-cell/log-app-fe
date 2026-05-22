@@ -16,13 +16,13 @@ pipeline {
 
         stage('2. Test Build Docker Image') {
             steps {
-                echo '📦 ดึงคีย์จากระบบเซฟของ Jenkins ยิงตรงไปรัน Docker build พร้อมส่งค่าตัวแปร API...'
+                echo '📦 บิวด์ Frontend ใหม่ บังคับให้ยิงเข้าหาหลังบ้านผ่านพอร์ต 8081 ของเครื่อง Mac...'
                 sshagent(credentials: ['mac-ssh-key']) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "
                             cd ~/Downloads/log-app-fe-main && \\
                             DOCKER_CONFIG=/dev/null /usr/local/bin/docker build \\
-                                --build-arg VITE_API_BASE_URL=http://localhost:8080 \\
+                                --build-arg VITE_API_BASE_URL=http://127.0.0.1:8081 \\
                                 -t log-app-fe:latest .
                         "
                     """
@@ -43,14 +43,12 @@ pipeline {
 
         stage('4. Deploy Frontend') {
             steps {
-                echo '🚀 กำลังเคลียร์ Container เก่าและรัน Frontend ตัวใหม่ขึ้นมา...'
+                echo '🚀 กำลังเคลียร์ Container เก่าและรัน Frontend ตัวใหม่ขึ้นมาที่พอร์ต 3000...'
                 sshagent(credentials: ['mac-ssh-key']) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "
-                            # 1. เช็คและสั่งลบ Container เก่าทิ้งก่อน (ถ้ามีรันอยู่) เพื่อไม่ให้พอร์ตชนกัน
                             /usr/local/bin/docker rm -f log-app-fe-container || true
                             
-                            # 2. สั่งรัน Container ตัวใหม่ (ปรับปลายท่อเข้าพอร์ต 80 ของ Nginx)
                             /usr/local/bin/docker run -d \\
                                 --name log-app-fe-container \\
                                 -p 3000:80 \\
