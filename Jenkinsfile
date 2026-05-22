@@ -16,13 +16,14 @@ pipeline {
 
         stage('2. Test Build Docker Image') {
             steps {
-                echo '📦 บิวด์ Frontend ใหม่ บังคับให้ยิงเข้าหาหลังบ้านผ่านพอร์ต 8081 ของเครื่อง Mac...'
+                echo '📦 บังคับรีบิวด์แบบหักดิบ ไม่ใช้แคชเก่า เพื่อฝังพอร์ตหลังบ้าน 8081 ให้ถูกต้อง...'
                 sshagent(credentials: ['mac-ssh-key']) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "
                             cd ~/Downloads/log-app-fe-main && \\
                             DOCKER_CONFIG=/dev/null /usr/local/bin/docker build \\
-                                --build-arg VITE_API_BASE_URL=http://127.0.0.1:8081 \\
+                                --no-cache \\
+                                --build-arg VITE_API_BASE_URL=http://localhost:8081 \\
                                 -t log-app-fe:latest .
                         "
                     """
@@ -43,7 +44,7 @@ pipeline {
 
         stage('4. Deploy Frontend') {
             steps {
-                echo '🚀 กำลังเคลียร์ Container เก่าและรัน Frontend ตัวใหม่ขึ้นมาที่พอร์ต 3000...'
+                echo '🚀 กำลังเคลียร์ Container เก่าและรัน Frontend ตัวใหม่ขึ้นมา...'
                 sshagent(credentials: ['mac-ssh-key']) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "
