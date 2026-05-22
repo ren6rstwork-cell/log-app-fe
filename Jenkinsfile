@@ -4,33 +4,36 @@ pipeline {
     environment {
         MAC_USER = 'ren' 
         MAC_HOST = 'host.docker.internal'
-        // ✨ สังเกตไหมครับ รหัสผ่านหายไปอย่างถาวรแล้ว! ปลอดภัย 100%
     }
 
     stages {
         stage('1. Checkout Code') {
             steps {
-                echo '🚚 กำลังดึงโค้ดล่าสุดจาก GitHub ส่วนตัว...'
+                echo '🚚 กำลังดึงโค้ดล่าสุดจาก GitHub ส่วนตัว (Frontend)...'
                 checkout scm
             }
         }
 
         stage('2. Test Build Docker Image') {
             steps {
-                echo '📦 ส่งคำสั่งผ่านกุญแจดิจิทัล SSH Key ไปรัน Docker build...'
-                // 🔥 ตัด apt-get install และ sshpass ออกไปเลย ใช้แค่ ssh ธรรมดา
-                sh """
-                    ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "cd ~/Downloads/log-app-be-main && DOCKER_CONFIG=/dev/null /usr/local/bin/docker build -t log-app-be:latest ."
-                """
+                echo '📦 ดึงคีย์จากระบบเซฟของ Jenkins ยิงตรงไปรัน Docker build...'
+                // 🔥 บล็อก sshagent จะไปเปิดเซฟหยิบคีย์ 'mac-ssh-key' ออกมาใช้รันอัตโนมัติอย่างปลอดภัย
+                sshagent(credentials: ['mac-ssh-key']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "cd ~/Downloads/log-app-fe-main && DOCKER_CONFIG=/dev/null /usr/local/bin/docker build -t log-app-fe:latest ."
+                    """
+                }
             }
         }
 
         stage('3. Check Docker Images') {
             steps {
                 echo '🔍 ตรวจสอบความสำเร็จ...'
-                sh """
-                    ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "DOCKER_CONFIG=/dev/null /usr/local/bin/docker images | grep log-app-be"
-                """
+                sshagent(credentials: ['mac-ssh-key']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "DOCKER_CONFIG=/dev/null /usr/local/bin/docker images | grep log-app-fe"
+                    """
+                }
             }
         }
     }
