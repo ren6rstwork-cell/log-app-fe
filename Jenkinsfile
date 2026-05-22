@@ -22,7 +22,7 @@ pipeline {
                         ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "
                             cd ~/Downloads/log-app-fe-main && \\
                             DOCKER_CONFIG=/dev/null /usr/local/bin/docker build \\
-                                --build-arg VITE_API_BASE_URL=http://localhost:8081 \\
+                                --build-arg VITE_API_BASE_URL=http://localhost:8080 \\
                                 -t log-app-fe:latest .
                         "
                     """
