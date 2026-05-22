@@ -23,7 +23,7 @@ pipeline {
                             cd ~/Downloads/log-app-fe-main && \\
                             DOCKER_CONFIG=/dev/null /usr/local/bin/docker build \\
                                 --no-cache \\
-                                --build-arg VITE_API_BASE_URL=http://localhost:8081 \\
+                                --build-arg VITE_API_BASE_URL=http://localhost:8081/api \\
                                 -t log-app-fe:latest .
                         "
                     """

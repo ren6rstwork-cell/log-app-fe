@@ -16,7 +16,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   // หลังบ้านตัวจริงพอร์ต 8081
-  const API_URL = 'http://localhost:8081/api/logs';
+  const API_URL = 'http://localhost:8081/api/log';
 
   useEffect(() => {
     fetch(API_URL)
