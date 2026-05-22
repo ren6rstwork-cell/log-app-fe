@@ -16,10 +16,15 @@ pipeline {
 
         stage('2. Test Build Docker Image') {
             steps {
-                echo '📦 ดึงคีย์จากระบบเซฟของ Jenkins ยิงตรงไปรัน Docker build...'
+                echo '📦 ดึงคีย์จากระบบเซฟของ Jenkins ยิงตรงไปรัน Docker build พร้อมส่งค่าตัวแปร API...'
                 sshagent(credentials: ['mac-ssh-key']) {
                     sh """
-                        ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "cd ~/Downloads/log-app-fe-main && DOCKER_CONFIG=/dev/null /usr/local/bin/docker build -t log-app-fe:latest ."
+                        ssh -o StrictHostKeyChecking=no ${MAC_USER}@${MAC_HOST} "
+                            cd ~/Downloads/log-app-fe-main && \\
+                            DOCKER_CONFIG=/dev/null /usr/local/bin/docker build \\
+                                --build-arg VITE_API_BASE_URL=http://localhost:8081 \\
+                                -t log-app-fe:latest .
+                        "
                     """
                 }
             }
@@ -45,10 +50,10 @@ pipeline {
                             # 1. เช็คและสั่งลบ Container เก่าทิ้งก่อน (ถ้ามีรันอยู่) เพื่อไม่ให้พอร์ตชนกัน
                             /usr/local/bin/docker rm -f log-app-fe-container || true
                             
-                            # 2. สั่งรัน Container ตัวใหม่สำหรับหน้าเว็บ Frontend
+                            # 2. สั่งรัน Container ตัวใหม่ (ปรับปลายท่อเข้าพอร์ต 80 ของ Nginx)
                             /usr/local/bin/docker run -d \\
                                 --name log-app-fe-container \\
-                                -p 3000:3000 \\
+                                -p 3000:80 \\
                                 log-app-fe:latest
                         "
                     """
